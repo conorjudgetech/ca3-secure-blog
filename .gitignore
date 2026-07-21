@@ -1,0 +1,14 @@
+node_modules/
+.env
+*.db
+*.sqlite
+.vscode/
+.idea/
+.DS_Store
+CLAUDE.md
+.claude/
+.mcp.json
+npm-debug.log*
+
+# Private assignment brief — not part of the application
+CA3-Design-and-Build-Brief.md
