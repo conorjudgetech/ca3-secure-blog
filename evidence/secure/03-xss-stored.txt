@@ -1,0 +1,4 @@
+### [FIX-XSS-S] output encoding — re-running stored XSS (script + bypass payloads)
+img onerror rendered ESCAPED: &lt;img src=1 onerror
+browser execution on post page: no alert fired
+comment still displays (as text): comment-body

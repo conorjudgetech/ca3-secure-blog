@@ -1,0 +1,8 @@
+### [FIX-SQLI] parameterised queries — re-running insecure exploits
+login bypass  admin' OR '1'='1  -> HTTP 401 (was 302 on insecure; 401 = BLOCKED)
+login bypass  admin'--          -> HTTP 401 (401 = BLOCKED)
+search UNION exfil               -> leaked creds: 'none' (none = BLOCKED, term treated as literal)
+
+### normal features still work
+honest login  -> HTTP 302 (302 = OK)
+search literal 'Hello' finds post -> Hello

@@ -1,0 +1,4 @@
+### [FIX-XSS-D] textContent — re-running DOM XSS exploit
+browser: alert fired: no
+#results innerHTML written by client JS: "You searched for: &lt;img src=1 onerror=alert(`dom`)&gt;"
+(the payload appears as literal text in #results, and no alert fires)

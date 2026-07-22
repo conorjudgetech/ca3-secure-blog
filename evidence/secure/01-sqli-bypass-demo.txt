@@ -1,0 +1,7 @@
+[string context] sanitised input: "alice OR 1=1" -> quotes stripped, tautology neutralised here.
+[numeric context] sanitised payload: "1 OR 1=1"
+[numeric context] rows returned: 3 (expected 1 for a real id lookup)
+  => BYPASS CONFIRMED: quote-blacklisting returned the ENTIRE table.
+[parameterised] rows returned for the same payload: 0 (expected 0)
+
+RESULT: blacklisting bypassed; parameterisation holds. (This is the [FIX-SQLI] argument.)

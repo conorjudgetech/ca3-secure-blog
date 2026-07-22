@@ -1,0 +1,4 @@
+### [FIX-XSS-R] output encoding — re-running the reflected XSS exploit
+payload appears ESCAPED in response: &lt;script&gt;
+raw <script> present in HTML? no (empty)
+browser execution: no alert fired  (was "ALERT FIRED: localhost" on insecure -> BLOCKED)

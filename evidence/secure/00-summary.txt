@@ -1,0 +1,21 @@
+=============================================================
+ SECURE BRANCH — consolidated verification (HEAD)
+=============================================================
+
+--- normal features (with CSRF flow) ---
+register admin      -> 302
+create post         -> 302
+comment on post     -> 302
+view post           -> 200
+search              -> 200
+admin view logs     -> 200
+admin delete post   -> 302
+logout              -> 302
+
+--- the five insecure exploits, re-run against secure ---
+#1 SQLi login bypass admin' OR '1'='1 -> HTTP 401 (401=BLOCKED)
+#2 Reflected XSS  -> browser: no alert fired
+#3 Stored XSS     -> browser: no alert fired
+#4 DOM XSS        -> browser: alert fired: no
+#5 SDE ?debug=true dump -> '' (empty=gone)
+#5 SDE verbose error /search?q=x'x -> HTTP 200, leak=''

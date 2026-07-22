@@ -1,0 +1,10 @@
+### [FIX-SESSION] hardened session management
+1) Set-Cookie flags on 'sid':
+   Set-Cookie: sid=s%3AUxLYonEzBUJi2hUfUaCMy8hANe--VnqM.MwKjICFWrNOAS9jqhGVy76HtMT6mvzBScXE9CZDz3cg; Path=/; Expires=Wed, 22 Jul 2026 04:38:19 GMT; HttpOnly; SameSite=Strict
+2) session id regenerated on login (fixation defence):
+   pre-auth  sid: s%3AfSS-8iJYqrk3U0NQZ7_1
+   post-auth sid: s%3AAQmwANIUiS4PEBCODT_J
+   => REGENERATED (session fixation defeated)
+3) absolute timeout (set to 1.5s for the test):
+   immediately after login, /posts/new -> HTTP 200 (200=authed)
+   after 2s (>absolute), /posts/new -> HTTP 302 redirect=http://localhost:3312/login (302 to /login = expired)

@@ -1,0 +1,9 @@
+### [FIX-SDE] re-running the four SDE facets from the insecure branch
+1) password now bcrypt-hashed (was plaintext): $2b$12$...  hashed=true
+2) verbose SQL/stack leak on /search?q=x'x: HTTP 200, leak='none' (200 + none = no error, parameterised)
+3) ?debug=true dump: 'no dump' (empty = endpoint gone, normal page served)
+4) hard-coded secret file src/secrets.js present? no — secrets come from env via config.js
+   generic error handler in code: Something went wrong. Please try again.
+
+### normal features still work
+honest login -> HTTP 302

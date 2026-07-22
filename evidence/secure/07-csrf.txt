@@ -1,0 +1,5 @@
+### [FIX-CSRF] synchroniser token on state-changing POSTs
+1) POST /register with NO _csrf token -> HTTP 403 (403 = rejected)
+   fetched CSRF token: b5a8b5605f8df9d2... (len 64)
+2) POST /register WITH valid token -> HTTP 302 (302 = accepted)
+3) POST /posts with WRONG token -> HTTP 403 (403 = rejected)

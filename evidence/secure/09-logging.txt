@@ -1,0 +1,9 @@
+### [FIX-LOGGING] security event log (A09) — detection of the real exploits
+  [INFO] New account registered: admin (admin)  ip=::1
+  [WARN] Possible XSS attempt: GET /search payload="<script>alert(1)</script>"  ip=::1
+  [WARN] Possible SQL injection attempt: GET /search payload="' OR 1=1"  ip=::1
+  [WARN] Possible SQL injection attempt: POST /login payload="admin' OR '1'='1"  ip=::1
+  [WARN] CSRF token validation failed for POST /login  ip=::1
+  [WARN] CSRF token validation failed for POST /login  ip=::1
+
+benign 'hello world' search produced NO injection/XSS warning above (no false positive).
