@@ -25,15 +25,15 @@ const Post = {
   },
 
   search(term) {
-    return db
-      .prepare(
-        `SELECT posts.*, users.username AS author
-         FROM posts
-         JOIN users ON users.id = posts.user_id
-         WHERE posts.title LIKE ? OR posts.body LIKE ?
-         ORDER BY posts.created_at DESC`
-      )
-      .all(`%${term}%`, `%${term}%`);
+    // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report §Insecure-1 | Issue #1
+    // WHY: the search term is concatenated into the query, so quotes in the term escape
+    //      the string literal and let an attacker append UNION/OR clauses.
+    const sql =
+      "SELECT posts.*, users.username AS author " +
+      "FROM posts JOIN users ON users.id = posts.user_id " +
+      "WHERE posts.title LIKE '%" + term + "%' OR posts.body LIKE '%" + term + "%' " +
+      "ORDER BY posts.created_at DESC";
+    return db.prepare(sql).all();
   },
 
   create({ userId, title, body }) {

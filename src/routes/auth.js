@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const config = require('../config');
+const db = require('../db/database').get();
 const User = require('../models/user');
 const logger = require('../logger');
 
@@ -53,12 +54,24 @@ router.get('/login', (req, res) => {
   res.render('login', { errors: [], values: {} });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', (req, res) => {
   const { username, password } = req.body;
-  const user = User.findByUsername(username);
-  const ok = user && (await bcrypt.compare(password || '', user.password));
 
-  if (!ok) {
+  // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report §Insecure-1 | Issue #1
+  // WHY: username and password are concatenated straight into the SQL string, so a
+  //      value like  admin' OR '1'='1  rewrites the WHERE clause into a tautology and
+  //      authentication succeeds whenever the query returns any row.
+  const sql =
+    "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
+
+  let user;
+  try {
+    user = db.prepare(sql).get();
+  } catch (err) {
+    user = null;
+  }
+
+  if (!user) {
     logger.warn(`Failed login for username: ${username}`, req);
     return res.status(401).render('login', {
       errors: ['Invalid username or password.'],
