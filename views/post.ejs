@@ -17,9 +17,12 @@
     <% comments.forEach(function (comment) { %>
       <div class="comment">
         <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
-        <%# NAIVE FIX (rejected): comment body rendered as raw HTML, trusting the %>
-        <%#      server-side <script>-stripping. See the [FIX-XSS-S] commit. %>
-        <p class="comment-body"><%- comment.body %></p>
+        <%# [FIX-XSS-S] OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | Report Secure-3 | closes #3 %>
+        <%# WHY: the stored comment is rendered with the escaped output tag, so any markup — %>
+        <%#      script tags, event handlers, svg — becomes inert text for every viewer. %>
+        <%# RESIDUAL: encoding is per-context; if a comment were ever placed into an attribute %>
+        <%#           or reflected into JS, that context needs its own encoding. CSP backs it up. %>
+        <p class="comment-body"><%= comment.body %></p>
       </div>
     <% }) %>
   <% } %>

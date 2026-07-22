@@ -52,11 +52,10 @@ router.post('/posts/:id/comments', requireAuth, (req, res) => {
     return res.status(404).render('error', { message: 'Post not found.' });
   }
 
-  // NAIVE FIX (rejected): strip <script> tags then render the comment as raw HTML. This
-  // stops the obvious <script> payload but is a denylist — any other markup (e.g. an event
-  // handler) sails through. Replaced by output encoding in the [FIX-XSS-S] commit.
-  const raw = (req.body.body || '').trim();
-  const body = raw.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
+  // [FIX-XSS-S] the comment is stored verbatim and safety is applied at render time by the
+  // template's output encoding (see views/post.ejs). Storing raw + encoding on output is the
+  // correct control; input filtering is the denylist that was bypassed (tests/xss-scriptstrip-bypass.js).
+  const body = (req.body.body || '').trim();
   if (!body) {
     return res.redirect(`/posts/${post.id}`);
   }
