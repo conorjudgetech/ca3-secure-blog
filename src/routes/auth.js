@@ -81,9 +81,20 @@ router.post('/login', async (req, res) => {
   //           non-parameterisable positions (table/column names, ORDER BY) — those need
   //           access-control checks and allow-listing respectively.
   const user = User.findByUsername(username);
+
+  // [FIX-LOCKOUT] brute-force lockout — reject while locked with the generic error | #1
+  if (user && User.isLocked(user.id)) {
+    logger.warn(`Login blocked (account locked): ${username}`, req);
+    return res.status(401).render('login', {
+      errors: ['Invalid username or password.'],
+      values: { username }
+    });
+  }
+
   const ok = user && (await bcrypt.compare(password || '', user.password));
 
   if (!ok) {
+    if (user) User.recordFailedLogin(user.id, config.lockoutThreshold, config.lockoutMinutes);
     logger.warn(`Failed login for username: ${username}`, req);
     return res.status(401).render('login', {
       errors: ['Invalid username or password.'],
@@ -91,6 +102,7 @@ router.post('/login', async (req, res) => {
     });
   }
 
+  User.clearFailedLogins(user.id);
   logger.info(`Login: ${user.username}`, req);
   establishSession(req, user, () => res.redirect('/'));
 });

@@ -15,7 +15,9 @@ const config = {
   bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS, 10) || 12,
   isProduction: process.env.NODE_ENV === 'production',
   sessionIdleTimeoutMs: parseInt(process.env.SESSION_IDLE_MS, 10) || 30 * 60 * 1000, // 30 minutes
-  sessionAbsoluteTimeoutMs: parseInt(process.env.SESSION_ABSOLUTE_MS, 10) || 8 * 60 * 60 * 1000 // 8 hours
+  sessionAbsoluteTimeoutMs: parseInt(process.env.SESSION_ABSOLUTE_MS, 10) || 8 * 60 * 60 * 1000, // 8 hours
+  lockoutThreshold: parseInt(process.env.LOCKOUT_THRESHOLD, 10) || 5,
+  lockoutMinutes: parseInt(process.env.LOCKOUT_MINUTES, 10) || 15
 };
 
 module.exports = config;
