@@ -24,6 +24,18 @@ function validateRegistration({ username, email, password }) {
   return errors;
 }
 
+// [FIX-SESSION] regenerate the session on authentication so a pre-login (possibly attacker-
+// fixed) session id cannot be reused — defeats session fixation — and stamp the creation time
+// used by the absolute-timeout check.
+function establishSession(req, user, onDone) {
+  req.session.regenerate((err) => {
+    if (err) logger.error(`Session regeneration failed: ${err.message}`, req);
+    req.session.user = { id: user.id, username: user.username, role: user.role };
+    req.session.createdAt = Date.now();
+    req.session.save(() => onDone());
+  });
+}
+
 router.get('/register', (req, res) => {
   res.render('register', { errors: [], values: {} });
 });
@@ -51,8 +63,7 @@ router.post('/register', async (req, res) => {
   const user = User.create({ username, email, password: hash, role });
 
   logger.info(`New account registered: ${username} (${role})`, req);
-  req.session.user = { id: user.id, username: user.username, role: user.role };
-  res.redirect('/');
+  establishSession(req, user, () => res.redirect('/'));
 });
 
 router.get('/login', (req, res) => {
@@ -80,9 +91,8 @@ router.post('/login', async (req, res) => {
     });
   }
 
-  req.session.user = { id: user.id, username: user.username, role: user.role };
   logger.info(`Login: ${user.username}`, req);
-  res.redirect('/');
+  establishSession(req, user, () => res.redirect('/'));
 });
 
 router.post('/logout', (req, res) => {

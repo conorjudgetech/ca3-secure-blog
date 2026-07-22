@@ -43,17 +43,43 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// [FIX-SESSION] OWASP + Session Management Cheat Sheet | CWE-384 | Report Secure-6
+// WHY: cookies are HttpOnly (unreadable from JS, limiting XSS session theft), SameSite=Strict
+//      (not sent on cross-site requests, backing the CSRF defence) and Secure in production
+//      (HTTPS only). rolling:true renews the cookie on activity, giving an idle timeout; an
+//      absolute timeout (below) and session regeneration on login (routes/auth.js) cap a
+//      session's lifetime and defeat fixation.
+// RESIDUAL: shorter timeouts trade convenience for exposure, and a token stolen mid-session is
+//      usable until it expires — re-auth for sensitive actions would harden this further.
 app.use(
   session({
     name: 'sid',
     secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
-    cookie: { httpOnly: true, maxAge: 1000 * 60 * 60 }
+    rolling: true,
+    cookie: {
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: config.isProduction,
+      maxAge: config.sessionIdleTimeoutMs
+    }
   })
 );
 
 app.use(currentUser);
+
+// [FIX-SESSION] enforce the absolute session lifetime (the rolling cookie handles idle timeout).
+app.use((req, res, next) => {
+  if (
+    req.session.user &&
+    req.session.createdAt &&
+    Date.now() - req.session.createdAt > config.sessionAbsoluteTimeoutMs
+  ) {
+    return req.session.destroy(() => res.redirect('/login'));
+  }
+  next();
+});
 
 // [FIX-CSRF] issue the per-session token to every view, then reject any state-changing
 // request whose token is missing or wrong. See src/middleware/csrf.js.

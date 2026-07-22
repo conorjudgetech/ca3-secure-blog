@@ -12,7 +12,10 @@ const config = {
   port: parseInt(process.env.PORT, 10) || 3000,
   sessionSecret: process.env.SESSION_SECRET || 'dev-only-insecure-secret',
   dbPath: path.resolve(__dirname, '..', process.env.DB_PATH || 'data/blog.db'),
-  bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS, 10) || 12
+  bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS, 10) || 12,
+  isProduction: process.env.NODE_ENV === 'production',
+  sessionIdleTimeoutMs: parseInt(process.env.SESSION_IDLE_MS, 10) || 30 * 60 * 1000, // 30 minutes
+  sessionAbsoluteTimeoutMs: parseInt(process.env.SESSION_ABSOLUTE_MS, 10) || 8 * 60 * 60 * 1000 // 8 hours
 };
 
 module.exports = config;
