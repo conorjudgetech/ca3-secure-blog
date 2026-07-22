@@ -57,7 +57,7 @@ router.get('/login', (req, res) => {
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report §Insecure-1 | Issue #1
+  // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report Insecure-1 | Issue #1
   // WHY: username and password are concatenated straight into the SQL string, so a
   //      value like  admin' OR '1'='1  rewrites the WHERE clause into a tautology and
   //      authentication succeeds whenever the query returns any row.
