@@ -17,7 +17,10 @@
     <% comments.forEach(function (comment) { %>
       <div class="comment">
         <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
-        <p class="comment-body"><%= comment.body %></p>
+        <%# [VULN-XSS-S] OWASP A03:2021 | CWE-79 | Report Insecure-3 | Issue #3 %>
+        <%# WHY: comment.body is stored as-is and rendered unescaped (raw), so a script %>
+        <%#      payload persists in the database and executes for every later viewer. %>
+        <p class="comment-body"><%- comment.body %></p>
       </div>
     <% }) %>
   <% } %>
