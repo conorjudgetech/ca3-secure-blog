@@ -37,6 +37,16 @@ app.use((req, res) => {
   res.status(404).render('error', { message: 'Page not found.' });
 });
 
+// [FIX-SDE] OWASP A02:2021 + Error Handling Cheat Sheet | CWE-209 | Report Secure-5 | closes #5
+// WHY: unexpected errors are logged server-side but the client only ever receives a generic
+//      message, so SQL text, stack traces and file paths never reach an attacker.
+// RESIDUAL: generic messages hide detail from attackers, not the fault itself — pair with
+//      the security log so failures are still detected ([FIX-LOGGING]).
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).render('error', { message: 'Something went wrong. Please try again.' });
+});
+
 app.listen(config.port, () => {
   console.log(`Server running at http://localhost:${config.port}`);
 });

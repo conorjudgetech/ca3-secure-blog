@@ -39,6 +39,12 @@ router.post('/register', async (req, res) => {
     return res.status(400).render('register', { errors, values: { username, email } });
   }
 
+  // [FIX-SDE] OWASP A02:2021 + Password Storage Cheat Sheet | CWE-256 | Report Secure-5 | closes #5
+  // WHY: the password is stored only as a bcrypt hash (per-user salt built in, tuned work
+  //      factor via BCRYPT_ROUNDS); bcrypt.compare is constant-time, so a database leak does
+  //      not expose credentials and verification is not timing-attackable.
+  // RESIDUAL: hashing protects passwords at rest, not a live hijacked session or a weak
+  //      user-chosen password; pair with session controls and a breached-password check.
   const hash = await bcrypt.hash(password, config.bcryptRounds);
   // The very first account becomes the admin; everyone after is a regular user.
   const role = User.count() === 0 ? 'admin' : 'user';

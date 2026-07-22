@@ -2,6 +2,12 @@ require('dotenv').config();
 
 const path = require('path');
 
+// [FIX-SDE] OWASP A02:2021 | CWE-798 | Report Secure-5 | closes #5
+// WHY: all secrets (session signing key, DB path, work factor) are read from the
+//      environment via a gitignored .env, never hard-coded or committed. .env.example
+//      documents the keys without values.
+// RESIDUAL: the dev fallback secret below is only for a fresh local checkout; a real
+//      deployment must set SESSION_SECRET (the README says so) or sessions are forgeable.
 const config = {
   port: parseInt(process.env.PORT, 10) || 3000,
   sessionSecret: process.env.SESSION_SECRET || 'dev-only-insecure-secret',
