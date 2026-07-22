@@ -1,0 +1,20 @@
+<%- include('partials/header', { title: 'Log in' }) %>
+<h1>Log in</h1>
+
+<% if (errors.length) { %>
+  <ul class="errors">
+    <% errors.forEach(function (e) { %><li><%= e %></li><% }) %>
+  </ul>
+<% } %>
+
+<form method="POST" action="/login">
+  <label for="username">Username</label>
+  <input type="text" id="username" name="username" value="<%= values.username || '' %>" required>
+
+  <label for="password">Password</label>
+  <input type="password" id="password" name="password" required>
+
+  <button type="submit">Log in</button>
+</form>
+<p>Need an account? <a href="/register">Register</a>.</p>
+<%- include('partials/footer') %>

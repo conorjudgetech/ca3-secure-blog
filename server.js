@@ -4,6 +4,7 @@ const session = require('express-session');
 
 const config = require('./src/config');
 const { currentUser } = require('./src/middleware/auth');
+const authRoutes = require('./src/routes/auth');
 const postsRoutes = require('./src/routes/posts');
 
 const app = express();
@@ -26,6 +27,7 @@ app.use(
 
 app.use(currentUser);
 
+app.use('/', authRoutes);
 app.use('/', postsRoutes);
 
 // 404 handler
