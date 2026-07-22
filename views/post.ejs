@@ -5,6 +5,7 @@
   <div class="post-body"><%= post.body %></div>
   <% if (currentUser && currentUser.role === 'admin') { %>
     <form method="POST" action="/posts/<%= post.id %>/delete">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <button type="submit">Delete post</button>
     </form>
   <% } %>
@@ -29,6 +30,7 @@
 
   <% if (currentUser) { %>
     <form method="POST" action="/posts/<%= post.id %>/comments">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <label for="body">Add a comment</label>
       <textarea id="body" name="body" required></textarea>
       <button type="submit">Comment</button>

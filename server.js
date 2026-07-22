@@ -5,6 +5,7 @@ const helmet = require('helmet');
 
 const config = require('./src/config');
 const { currentUser } = require('./src/middleware/auth');
+const { issueToken, verifyToken } = require('./src/middleware/csrf');
 const authRoutes = require('./src/routes/auth');
 const postsRoutes = require('./src/routes/posts');
 const adminRoutes = require('./src/routes/admin');
@@ -53,6 +54,11 @@ app.use(
 );
 
 app.use(currentUser);
+
+// [FIX-CSRF] issue the per-session token to every view, then reject any state-changing
+// request whose token is missing or wrong. See src/middleware/csrf.js.
+app.use(issueToken);
+app.use(verifyToken);
 
 app.use('/', authRoutes);
 app.use('/', postsRoutes);
