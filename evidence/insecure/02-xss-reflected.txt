@@ -1,0 +1,6 @@
+### Reflected XSS in /search  (payload: <script>alert(document.domain)</script>)
+-- payload reflected UNESCAPED in server response:
+You searched for: <script>alert(document.domain)</script>
+-- real browser execution (headless Chromium):
+ALERT FIRED with message: "localhost"
+-- control: escaped app would render &lt;script&gt; and NOT fire

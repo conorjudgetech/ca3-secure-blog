@@ -1,0 +1,5 @@
+### Stored XSS in comments (payload persisted in DB, rendered raw on /posts/1)
+-- stored payload present UNESCAPED in the served post page:
+<script>alert('stored-xss')</script>
+-- a later viewer's browser executes it (headless Chromium):
+ALERT FIRED with message: "stored-xss"

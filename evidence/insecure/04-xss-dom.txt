@@ -1,0 +1,6 @@
+### DOM-based XSS in /js/search.js  (sink: results.innerHTML = ... + q)
+-- server delivers #results EMPTY (payload is not in server HTML at all):
+<div id="results"></div>
+-- browser: client JS writes q into the DOM and the payload executes:
+alert fired: YES "dom-xss"
+#results innerHTML written by client JS: "You searched for: <img src=\"1\" onerror=\"alert(`dom-xss`)\">"

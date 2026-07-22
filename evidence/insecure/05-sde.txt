@@ -1,0 +1,38 @@
+### 1) Plaintext password storage (CWE-256)
+   stored password value: "CorrectHorse9"
+   is plaintext (not bcrypt): true
+   honest login (alice/CorrectHorse9) -> HTTP 302
+
+### 2) Verbose SQL/stack error leak (CWE-209)  /search?q=x'x
+   SqliteError: near "x": syntax error
+   at Object.search (/Users/conor/Desktop/ca3-secure-blog/src/models/post.js:36:15
+
+### 3) Hard-coded secret committed in src/secrets.js (CWE-798)
+   sessionSecret: 'hardcoded-session-secret-please-change-in-prod'
+   apiKey: 'DEMO_1234567890_hardcoded_api_key_not_real'
+
+### 4) ?debug=true dump — secrets + plaintext credentials (CWE-215)
+   {
+       "message": "debug mode",
+       "secrets": {
+           "apiKey": "DEMO_1234567890_hardcoded_api_key_not_real",
+           "sessionSecret": "hardcoded-session-secret-please-change-in-prod"
+       },
+       "session": {
+           "cookie": {
+               "originalMaxAge": 3600000,
+               "expires": "2026-07-22T04:29:45.520Z",
+               "httpOnly": true,
+               "path": "/"
+           }
+       },
+       "users": [
+           {
+               "id": 1,
+               "username": "alice",
+               "email": "alice@site.com",
+               "password": "CorrectHorse9",
+               "role": "admin"
+           }
+       ]
+   }
