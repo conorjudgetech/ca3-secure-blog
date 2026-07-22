@@ -7,6 +7,9 @@
   <button type="submit">Search</button>
 </form>
 
+<%# Populated on the client by /js/search.js using textContent (see [FIX-XSS-D]). %>
+<div id="results"></div>
+
 <% if (q) { %>
   <%# [FIX-XSS-R] OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | Report Secure-2 | closes #2 %>
   <%# WHY: q is rendered with the escaped output tag, which HTML-entity-encodes it, so a %>
@@ -27,4 +30,5 @@
     </ul>
   <% } %>
 <% } %>
+<script src="/js/search.js"></script>
 <%- include('partials/footer') %>
