@@ -6,6 +6,7 @@ const config = require('./src/config');
 const { currentUser } = require('./src/middleware/auth');
 const authRoutes = require('./src/routes/auth');
 const postsRoutes = require('./src/routes/posts');
+const adminRoutes = require('./src/routes/admin');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(currentUser);
 
 app.use('/', authRoutes);
 app.use('/', postsRoutes);
+app.use('/', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -3,6 +3,11 @@
   <h1><%= post.title %></h1>
   <p class="meta">by <%= post.author %> on <%= post.created_at %></p>
   <div class="post-body"><%= post.body %></div>
+  <% if (currentUser && currentUser.role === 'admin') { %>
+    <form method="POST" action="/posts/<%= post.id %>/delete">
+      <button type="submit">Delete post</button>
+    </form>
+  <% } %>
 </article>
 <section class="comments">
   <h2>Comments</h2>

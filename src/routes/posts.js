@@ -1,7 +1,7 @@
 const express = require('express');
 const Post = require('../models/post');
 const Comment = require('../models/comment');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const logger = require('../logger');
 
 const router = express.Router();
@@ -60,6 +60,17 @@ router.post('/posts/:id/comments', requireAuth, (req, res) => {
   Comment.create({ postId: post.id, userId: req.session.user.id, body });
   logger.info(`Comment added on post #${post.id} by ${req.session.user.username}`, req);
   res.redirect(`/posts/${post.id}`);
+});
+
+router.post('/posts/:id/delete', requireAdmin, (req, res) => {
+  const post = Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).render('error', { message: 'Post not found.' });
+  }
+
+  Post.delete(post.id);
+  logger.warn(`Post deleted: #${post.id} by admin ${req.session.user.username}`, req);
+  res.redirect('/');
 });
 
 module.exports = router;
