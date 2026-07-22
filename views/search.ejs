@@ -8,7 +8,10 @@
 </form>
 
 <% if (q) { %>
-  <p>Results for &ldquo;<%= q %>&rdquo;:</p>
+  <%# [VULN-XSS-R] OWASP A03:2021 | CWE-79 | Report Insecure-2 | Issue #2 %>
+  <%# WHY: q is rendered unescaped (raw), so a script payload in the search term is %>
+  <%#      reflected as live markup and executes in the browser. %>
+  <p>You searched for: <%- q %></p>
   <% if (results.length === 0) { %>
     <p>No posts matched your search.</p>
   <% } else { %>
