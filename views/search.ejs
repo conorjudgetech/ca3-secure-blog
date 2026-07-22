@@ -7,6 +7,9 @@
   <button type="submit">Search</button>
 </form>
 
+<%# Populated on the client by /js/search.js — see the DOM-based XSS sink there. %>
+<div id="results"></div>
+
 <% if (q) { %>
   <%# [VULN-XSS-R] OWASP A03:2021 | CWE-79 | Report Insecure-2 | Issue #2 %>
   <%# WHY: q is rendered unescaped (raw), so a script payload in the search term is %>
@@ -25,4 +28,5 @@
     </ul>
   <% } %>
 <% } %>
+<script src="/js/search.js"></script>
 <%- include('partials/footer') %>
