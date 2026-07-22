@@ -16,7 +16,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// [FIX-HEADERS] OWASP Secure Headers Project + helmet | Report Secure-7
+// [FIX-HEADERS] OWASP Secure Headers Project + helmet | Report Secure-8
 // WHY: sets defensive response headers on every request. The Content-Security-Policy limits
 //      scripts and styles to same-origin with no inline execution, so it is the defence-in-depth
 //      backstop for XSS — an injected inline <script> or onerror handler is refused by the
@@ -44,7 +44,7 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// [FIX-SESSION] OWASP + Session Management Cheat Sheet | CWE-384 | Report Secure-6
+// [FIX-SESSION] OWASP + Session Management Cheat Sheet | CWE-384 | Report Secure-7
 // WHY: cookies are HttpOnly (unreadable from JS, limiting XSS session theft), SameSite=Strict
 //      (not sent on cross-site requests, backing the CSRF defence) and Secure in production
 //      (HTTPS only). rolling:true renews the cookie on activity, giving an idle timeout; an

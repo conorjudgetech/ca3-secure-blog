@@ -1,6 +1,6 @@
 const logger = require('../logger');
 
-// [FIX-LOGGING] OWASP A09:2021 Security Logging and Monitoring Failures | Report Secure-8
+// [FIX-LOGGING] OWASP A09:2021 Security Logging and Monitoring Failures | Report Secure-9
 // WHY: scans incoming query/body values for signatures of the attacks this app studies —
 //      SQL injection (' OR, --, UNION SELECT, ; DROP) and XSS (<script, onerror=, onload=,
 //      javascript:) — and records a WARN with the user and IP. Together with the auth events
