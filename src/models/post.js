@@ -1,5 +1,4 @@
 const db = require('../db/database').get();
-const naiveSanitise = require('../naiveSanitise');
 
 const Post = {
   // Posts joined with their author's username, newest first.
@@ -26,15 +25,20 @@ const Post = {
   },
 
   search(term) {
-    // NAIVE FIX (rejected): concatenated LIKE query with quote-blacklisting. Kept only to
-    // show the bypass; replaced by a parameterised query in the [FIX-SQLI] commit.
-    const t = naiveSanitise(term);
-    const sql =
-      "SELECT posts.*, users.username AS author " +
-      "FROM posts JOIN users ON users.id = posts.user_id " +
-      "WHERE posts.title LIKE '%" + t + "%' OR posts.body LIKE '%" + t + "%' " +
-      "ORDER BY posts.created_at DESC";
-    return db.prepare(sql).all();
+    // [FIX-SQLI] OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | Report Secure-1 | closes #1
+    // WHY: the term is bound as a parameter, so quotes or SQL keywords in it are treated as
+    //      literal characters of the LIKE pattern, never as query syntax.
+    // RESIDUAL: the LIKE wildcards % and _ in user input still act as wildcards (search
+    //           semantics, not injection); escape them if exact-substring matching matters.
+    return db
+      .prepare(
+        `SELECT posts.*, users.username AS author
+         FROM posts
+         JOIN users ON users.id = posts.user_id
+         WHERE posts.title LIKE ? OR posts.body LIKE ?
+         ORDER BY posts.created_at DESC`
+      )
+      .all(`%${term}%`, `%${term}%`);
   },
 
   create({ userId, title, body }) {

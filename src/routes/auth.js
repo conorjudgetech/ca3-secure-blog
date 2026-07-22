@@ -2,9 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const config = require('../config');
-const db = require('../db/database').get();
 const User = require('../models/user');
-const naiveSanitise = require('../naiveSanitise');
 const logger = require('../logger');
 
 const router = express.Router();
@@ -58,12 +56,14 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
-  // NAIVE FIX (rejected): a concatenated query defended with quote-blacklisting. It stops
-  // the basic  admin' OR '1'='1  tautology but is not a real control — quote-stripping is a
-  // denylist that fails in other contexts (see tests/sqli-blacklist-bypass.js). Replaced by
-  // parameterised queries in the [FIX-SQLI] commit.
-  const sql = "SELECT * FROM users WHERE username = '" + naiveSanitise(username) + "'";
-  const user = db.prepare(sql).get();
+  // [FIX-SQLI] OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | Report Secure-1 | closes #1
+  // WHY: the query is parsed with a bound parameter, so the username is only ever data and
+  //      can never change the statement's structure — unlike blacklisting, this is
+  //      context-independent and cannot be bypassed by a crafted payload.
+  // RESIDUAL: parameterisation stops injection, not authorization flaws (IDOR) or
+  //           non-parameterisable positions (table/column names, ORDER BY) — those need
+  //           access-control checks and allow-listing respectively.
+  const user = User.findByUsername(username);
   const ok = user && (await bcrypt.compare(password || '', user.password));
 
   if (!ok) {
