@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet');
 
 const config = require('./src/config');
 const { currentUser } = require('./src/middleware/auth');
@@ -12,6 +13,31 @@ const app = express();
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// [FIX-HEADERS] OWASP Secure Headers Project + helmet | Report Secure-7
+// WHY: sets defensive response headers on every request. The Content-Security-Policy limits
+//      scripts and styles to same-origin with no inline execution, so it is the defence-in-depth
+//      backstop for XSS — an injected inline <script> or onerror handler is refused by the
+//      browser even if an output-encoding slip ever let markup through. X-Content-Type-Options
+//      stops MIME sniffing, frameAncestors 'none' blocks clickjacking, HSTS enforces HTTPS.
+// RESIDUAL: a CSP is only as strong as its weakest directive — 'unsafe-inline' or a broad host
+//      allow-list would reopen the gap, so the policy stays tight; headers complement, not replace,
+//      the primary controls (encoding, parameterisation).
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"]
+      }
+    }
+  })
+);
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
