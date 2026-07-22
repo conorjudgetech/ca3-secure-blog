@@ -1,5 +1,6 @@
 const express = require('express');
 const Post = require('../models/post');
+const Comment = require('../models/comment');
 const { requireAuth } = require('../middleware/auth');
 const logger = require('../logger');
 
@@ -36,7 +37,23 @@ router.get('/posts/:id', (req, res) => {
   if (!post) {
     return res.status(404).render('error', { message: 'Post not found.' });
   }
-  res.render('post', { post });
+  res.render('post', { post, comments: Comment.forPost(post.id) });
+});
+
+router.post('/posts/:id/comments', requireAuth, (req, res) => {
+  const post = Post.findById(req.params.id);
+  if (!post) {
+    return res.status(404).render('error', { message: 'Post not found.' });
+  }
+
+  const body = (req.body.body || '').trim();
+  if (!body) {
+    return res.redirect(`/posts/${post.id}`);
+  }
+
+  Comment.create({ postId: post.id, userId: req.session.user.id, body });
+  logger.info(`Comment added on post #${post.id} by ${req.session.user.username}`, req);
+  res.redirect(`/posts/${post.id}`);
 });
 
 module.exports = router;

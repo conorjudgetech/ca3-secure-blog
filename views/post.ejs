@@ -4,5 +4,29 @@
   <p class="meta">by <%= post.author %> on <%= post.created_at %></p>
   <div class="post-body"><%= post.body %></div>
 </article>
+<section class="comments">
+  <h2>Comments</h2>
+  <% if (comments.length === 0) { %>
+    <p>No comments yet.</p>
+  <% } else { %>
+    <% comments.forEach(function (comment) { %>
+      <div class="comment">
+        <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
+        <p class="comment-body"><%= comment.body %></p>
+      </div>
+    <% }) %>
+  <% } %>
+
+  <% if (currentUser) { %>
+    <form method="POST" action="/posts/<%= post.id %>/comments">
+      <label for="body">Add a comment</label>
+      <textarea id="body" name="body" required></textarea>
+      <button type="submit">Comment</button>
+    </form>
+  <% } else { %>
+    <p><a href="/login">Log in</a> to comment.</p>
+  <% } %>
+</section>
+
 <p><a href="/">&larr; Back to posts</a></p>
 <%- include('partials/footer') %>
