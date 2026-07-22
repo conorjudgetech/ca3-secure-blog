@@ -2,7 +2,9 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 
 const config = require('../config');
+const db = require('../db/database').get();
 const User = require('../models/user');
+const naiveSanitise = require('../naiveSanitise');
 const logger = require('../logger');
 
 const router = express.Router();
@@ -55,7 +57,13 @@ router.get('/login', (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = User.findByUsername(username);
+
+  // NAIVE FIX (rejected): a concatenated query defended with quote-blacklisting. It stops
+  // the basic  admin' OR '1'='1  tautology but is not a real control — quote-stripping is a
+  // denylist that fails in other contexts (see tests/sqli-blacklist-bypass.js). Replaced by
+  // parameterised queries in the [FIX-SQLI] commit.
+  const sql = "SELECT * FROM users WHERE username = '" + naiveSanitise(username) + "'";
+  const user = db.prepare(sql).get();
   const ok = user && (await bcrypt.compare(password || '', user.password));
 
   if (!ok) {
