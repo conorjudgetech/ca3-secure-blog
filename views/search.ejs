@@ -1,0 +1,25 @@
+<%- include('partials/header', { title: 'Search' }) %>
+<h1>Search posts</h1>
+
+<form method="GET" action="/search">
+  <label for="q">Search term</label>
+  <input type="search" id="q" name="q" value="<%= q %>">
+  <button type="submit">Search</button>
+</form>
+
+<% if (q) { %>
+  <p>Results for &ldquo;<%= q %>&rdquo;:</p>
+  <% if (results.length === 0) { %>
+    <p>No posts matched your search.</p>
+  <% } else { %>
+    <ul class="post-list">
+      <% results.forEach(function (post) { %>
+        <li>
+          <h2><a href="/posts/<%= post.id %>"><%= post.title %></a></h2>
+          <p class="meta">by <%= post.author %> on <%= post.created_at %></p>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+<% } %>
+<%- include('partials/footer') %>

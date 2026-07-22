@@ -11,6 +11,12 @@ router.get('/', (req, res) => {
   res.render('index', { posts: Post.all() });
 });
 
+router.get('/search', (req, res) => {
+  const q = (req.query.q || '').trim();
+  const results = q ? Post.search(q) : [];
+  res.render('search', { q, results });
+});
+
 router.get('/posts/new', requireAuth, (req, res) => {
   res.render('new-post', { errors: [], values: {} });
 });
