@@ -17,7 +17,9 @@
     <% comments.forEach(function (comment) { %>
       <div class="comment">
         <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
-        <p class="comment-body"><%= comment.body %></p>
+        <%# NAIVE FIX (rejected): comment body rendered as raw HTML, trusting the %>
+        <%#      server-side <script>-stripping. See the [FIX-XSS-S] commit. %>
+        <p class="comment-body"><%- comment.body %></p>
       </div>
     <% }) %>
   <% } %>

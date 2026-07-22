@@ -52,7 +52,11 @@ router.post('/posts/:id/comments', requireAuth, (req, res) => {
     return res.status(404).render('error', { message: 'Post not found.' });
   }
 
-  const body = (req.body.body || '').trim();
+  // NAIVE FIX (rejected): strip <script> tags then render the comment as raw HTML. This
+  // stops the obvious <script> payload but is a denylist — any other markup (e.g. an event
+  // handler) sails through. Replaced by output encoding in the [FIX-XSS-S] commit.
+  const raw = (req.body.body || '').trim();
+  const body = raw.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
   if (!body) {
     return res.redirect(`/posts/${post.id}`);
   }
