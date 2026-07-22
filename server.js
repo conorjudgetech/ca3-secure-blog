@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const config = require('./src/config');
 const { currentUser } = require('./src/middleware/auth');
 const { issueToken, verifyToken } = require('./src/middleware/csrf');
+const detectAttacks = require('./src/middleware/detect');
 const authRoutes = require('./src/routes/auth');
 const postsRoutes = require('./src/routes/posts');
 const adminRoutes = require('./src/routes/admin');
@@ -84,6 +85,9 @@ app.use((req, res, next) => {
 // [FIX-CSRF] issue the per-session token to every view, then reject any state-changing
 // request whose token is missing or wrong. See src/middleware/csrf.js.
 app.use(issueToken);
+// [FIX-LOGGING] log attack signatures before CSRF/route handling so probes are recorded
+// even when the request is subsequently rejected. See src/middleware/detect.js.
+app.use(detectAttacks);
 app.use(verifyToken);
 
 app.use('/', authRoutes);
