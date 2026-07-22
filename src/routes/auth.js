@@ -10,6 +10,10 @@ const router = express.Router();
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// [FIX-ENUM] fixed dummy hash compared against when a username is unknown, so login timing
+// does not reveal whether an account exists.
+const DUMMY_HASH = bcrypt.hashSync('timing-safe-dummy-password', config.bcryptRounds);
+
 function validateRegistration({ username, email, password }) {
   const errors = [];
   if (!USERNAME_RE.test(username || '')) {
@@ -91,7 +95,7 @@ router.post('/login', async (req, res) => {
     });
   }
 
-  const ok = user && (await bcrypt.compare(password || '', user.password));
+  const ok = (await bcrypt.compare(password || '', user ? user.password : DUMMY_HASH)) && !!user;
 
   if (!ok) {
     if (user) User.recordFailedLogin(user.id, config.lockoutThreshold, config.lockoutMinutes);
