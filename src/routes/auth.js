@@ -1,7 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
 
-const config = require('../config');
 const db = require('../db/database').get();
 const User = require('../models/user');
 const logger = require('../logger');
@@ -29,7 +27,7 @@ router.get('/register', (req, res) => {
   res.render('register', { errors: [], values: {} });
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', (req, res) => {
   const { username, email, password } = req.body;
   const errors = validateRegistration({ username, email, password });
 
@@ -40,10 +38,12 @@ router.post('/register', async (req, res) => {
     return res.status(400).render('register', { errors, values: { username, email } });
   }
 
-  const hash = await bcrypt.hash(password, config.bcryptRounds);
   // The very first account becomes the admin; everyone after is a regular user.
   const role = User.count() === 0 ? 'admin' : 'user';
-  const user = User.create({ username, email, password: hash, role });
+  // [VULN-SDE] OWASP A02:2021 Cryptographic Failures | CWE-256 | Report Insecure-5 | Issue #5
+  // WHY: the password is stored verbatim in plaintext, so anyone who reads the users
+  //      table (via the SQLi above or the debug dump) instantly has every credential.
+  const user = User.create({ username, email, password, role });
 
   logger.info(`New account registered: ${username} (${role})`, req);
   req.session.user = { id: user.id, username: user.username, role: user.role };
