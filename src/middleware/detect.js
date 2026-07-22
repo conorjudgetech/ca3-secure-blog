@@ -15,20 +15,24 @@ const SIGNATURES = [
   { name: 'XSS', re: /(<script\b|onerror\s*=|onload\s*=|javascript:)/i }
 ];
 
+// [FIX-LOGGING] never scan or log secret fields, and log only a short snippet, so credentials
+// or long post bodies are not written verbatim to the log.
+const SKIP_FIELDS = new Set(['password', '_csrf']);
+
+function scannableValues(obj) {
+  return Object.entries(obj || {})
+    .filter(([key, value]) => typeof value === 'string' && !SKIP_FIELDS.has(key))
+    .map(([, value]) => value);
+}
+
 function detectAttacks(req, res, next) {
-  const values = [...Object.values(req.query || {}), ...Object.values(req.body || {})].filter(
-    (v) => typeof v === 'string'
-  );
+  const values = [...scannableValues(req.query), ...scannableValues(req.body)];
 
   for (const value of values) {
     const match = SIGNATURES.find((sig) => sig.re.test(value));
     if (match) {
-      logger.warn(
-        `Possible ${match.name} attempt: ${req.method} ${req.path} payload=${JSON.stringify(
-          value
-        ).slice(0, 120)}`,
-        req
-      );
+      const snippet = value.slice(0, 40).replace(/\s+/g, ' ');
+      logger.warn(`Possible ${match.name} attempt: ${req.method} ${req.path} match="${snippet}"`, req);
       break;
     }
   }
