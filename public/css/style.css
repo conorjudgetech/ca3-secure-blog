@@ -1,0 +1,72 @@
+:root {
+  --ink: #1f2933;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --accent: #2563eb;
+  --bg: #f9fafb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+}
+
+.brand { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--ink); }
+
+nav { display: flex; align-items: center; gap: 1rem; }
+nav a { text-decoration: none; color: var(--accent); }
+.nav-user { color: var(--muted); }
+
+.container { max-width: 760px; margin: 0 auto; padding: 1.5rem; }
+
+.post-list { list-style: none; padding: 0; }
+.post-list li { padding: 1rem 0; border-bottom: 1px solid var(--line); }
+.post-list h2 { margin: 0 0 0.25rem; }
+.meta { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+form.inline { display: inline; }
+form label { display: block; margin: 0.75rem 0 0.25rem; font-weight: 600; }
+input[type="text"], input[type="email"], input[type="password"], input[type="search"], textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font: inherit;
+}
+textarea { min-height: 8rem; resize: vertical; }
+
+button {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+nav button { margin: 0; padding: 0.25rem 0.6rem; }
+
+.flash { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 0.5rem 0.75rem; border-radius: 4px; }
+.errors { color: #b91c1c; }
+.comment { border-top: 1px solid var(--line); padding: 0.75rem 0; }
+
+.site-footer { text-align: center; color: var(--muted); padding: 2rem 0; }
+
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--line); font-size: 0.9rem; }

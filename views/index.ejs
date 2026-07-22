@@ -1,0 +1,16 @@
+<%- include('partials/header', { title: 'Home' }) %>
+<h1>Latest posts</h1>
+
+<% if (posts.length === 0) { %>
+  <p>No posts yet.<% if (currentUser) { %> <a href="/posts/new">Write the first one.</a><% } %></p>
+<% } else { %>
+  <ul class="post-list">
+    <% posts.forEach(function (post) { %>
+      <li>
+        <h2><a href="/posts/<%= post.id %>"><%= post.title %></a></h2>
+        <p class="meta">by <%= post.author %> on <%= post.created_at %></p>
+      </li>
+    <% }) %>
+  </ul>
+<% } %>
+<%- include('partials/footer') %>
