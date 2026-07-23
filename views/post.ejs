@@ -18,8 +18,8 @@
       <div class="comment">
         <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
         <%# [VULN-XSS-S] OWASP A03:2021 | CWE-79 | Report Insecure-3 | Issue #3 %>
-        <%# WHY: comment.body is stored as-is and rendered unescaped (raw), so a script %>
-        <%#      payload persists in the database and executes for every later viewer. %>
+        <%# WHY: the comment body is stored as given and printed raw, without escaping. A script %>
+        <%#      payload stays in the database and runs for every later viewer. %>
         <p class="comment-body"><%- comment.body %></p>
       </div>
     <% }) %>

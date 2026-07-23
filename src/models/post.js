@@ -26,8 +26,8 @@ const Post = {
 
   search(term) {
     // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report Insecure-1 | Issue #1
-    // WHY: the search term is concatenated into the query, so quotes in the term escape
-    //      the string literal and let an attacker append UNION/OR clauses.
+    // WHY: the search term is put into the query as text. A quote in the term ends the string
+    //      and lets an attacker add UNION or OR clauses.
     const sql =
       "SELECT posts.*, users.username AS author " +
       "FROM posts JOIN users ON users.id = posts.user_id " +
