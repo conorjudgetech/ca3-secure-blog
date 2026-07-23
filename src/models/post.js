@@ -26,10 +26,10 @@ const Post = {
 
   search(term) {
     // [FIX-SQLI] OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | Report Secure-1 | closes #1
-    // WHY: the term is bound as a parameter, so quotes or SQL keywords in it are treated as
-    //      literal characters of the LIKE pattern, never as query syntax.
-    // RESIDUAL: the LIKE wildcards % and _ in user input still act as wildcards (search
-    //           semantics, not injection); escape them if exact-substring matching matters.
+    // WHY: the term is bound as a parameter. Quotes or SQL keywords in it are treated as literal
+    //      characters of the LIKE pattern, never as query syntax.
+    // RESIDUAL: the % and _ characters in the term still act as LIKE wildcards. That is search
+    //           behaviour, not injection. Escape them if you need an exact substring match.
     return db
       .prepare(
         `SELECT posts.*, users.username AS author

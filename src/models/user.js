@@ -24,7 +24,7 @@ const User = {
     return this.findById(result.lastInsertRowid);
   },
 
-  // [FIX-LOCKOUT] brute-force lockout using the failed_attempts / locked_until columns. | Report Secure-5
+  // [FIX-LOCKOUT] brute-force lockout using the failed_attempts and locked_until columns | Report Secure-5
   isLocked(id) {
     const row = db
       .prepare("SELECT (locked_until IS NOT NULL AND locked_until > datetime('now')) AS locked FROM users WHERE id = ?")

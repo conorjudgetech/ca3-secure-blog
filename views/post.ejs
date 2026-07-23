@@ -19,10 +19,10 @@
       <div class="comment">
         <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
         <%# [FIX-XSS-S] OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | Report Secure-3 | closes #3 %>
-        <%# WHY: the stored comment is rendered with the escaped output tag, so any markup — %>
-        <%#      script tags, event handlers, svg — becomes inert text for every viewer. %>
-        <%# RESIDUAL: encoding is per-context; if a comment were ever placed into an attribute %>
-        <%#           or reflected into JS, that context needs its own encoding. CSP backs it up. %>
+        <%# WHY: the stored comment is printed with the escaped output tag. Any markup, such as %>
+        <%#      script tags, event handlers or svg, is shown as plain text to every viewer. %>
+        <%# RESIDUAL: this encoding is right for the HTML body. If a comment were put into an %>
+        <%#           attribute or into a script, that place needs its own encoding. CSP backs it up. %>
         <p class="comment-body"><%= comment.body %></p>
       </div>
     <% }) %>

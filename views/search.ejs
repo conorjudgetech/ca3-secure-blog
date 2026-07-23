@@ -12,10 +12,10 @@
 
 <% if (q) { %>
   <%# [FIX-XSS-R] OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | Report Secure-2 | closes #2 %>
-  <%# WHY: q is rendered with the escaped output tag, which HTML-entity-encodes it, so a %>
-  <%#      script payload in the search term is shown as inert text, not parsed as markup. %>
-  <%# RESIDUAL: encoding is correct for this HTML body context; a value placed into an %>
-  <%#           attribute, URL or JS context needs that context's encoding. CSP backs it up. %>
+  <%# WHY: q is printed with the escaped output tag, which HTML-encodes it. A script payload in %>
+  <%#      the search term is shown as plain text and is not parsed as markup. %>
+  <%# RESIDUAL: this encoding is right for the HTML body. A value put into an attribute, a URL %>
+  <%#           or a script needs the encoding for that place. CSP backs it up. %>
   <p>You searched for: <%= q %></p>
   <% if (results.length === 0) { %>
     <p>No posts matched your search.</p>
