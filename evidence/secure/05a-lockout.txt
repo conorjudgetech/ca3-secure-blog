@@ -1,0 +1,19 @@
+### [FIX-LOCKOUT] account lockout after repeated failed logins, Report Secure-5
+
+Part 1: the account locks at the threshold (5, set in src/config.js).
+1) wrong password attempt 1 -> HTTP 401
+2) wrong password attempt 2 -> HTTP 401
+3) wrong password attempt 3 -> HTTP 401
+4) wrong password attempt 4 -> HTTP 401
+5) wrong password attempt 5 -> HTTP 401
+   DB after 5 failed logins: failed_attempts=5, locked_until=set (account locked)
+6) correct password while locked -> HTTP 401 (login is refused while locked)
+
+The message is the same before and after locking, so it does not reveal the lock state:
+   before locking (attempt 1): "Invalid username or password."
+   while locked (attempt 6):   "Invalid username or password."
+
+Part 2: a successful login clears the counter.
+   fresh account, 2 wrong password attempts -> failed_attempts=2
+   correct password -> HTTP 302 (login succeeds)
+   after success: failed_attempts=0 (counter reset)

@@ -1,0 +1,18 @@
+### [FIX-ENUM] login timing does not reveal whether a username exists, Report Secure-5
+
+An attacker should not be able to tell a real username from a fake one. The status code and
+the message must be the same, and the response time must be about the same.
+
+1) unknown username, wrong password      -> HTTP 401, "Invalid username or password."
+2) real username, wrong password         -> HTTP 401, "Invalid username or password."
+
+Same status code, same message.
+
+Timing, measured over 10 attempts each:
+   unknown username avg: 190 ms
+   real username avg:    191 ms
+   difference:           1 ms
+
+Both paths run one bcrypt compare, so both take about the same time. The 1 ms difference is
+within normal measurement noise. Without this fix the unknown-username path would skip bcrypt
+and return in under 1 ms, which would leak that the account does not exist.
