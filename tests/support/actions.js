@@ -46,6 +46,17 @@ async function comment(request, postId, body) {
   });
 }
 
+// Sends a delete request for a post. The token is read from the post page, so this works for any
+// signed in user, which lets a test confirm that an ordinary user is refused by authorization
+// rather than by a missing button.
+async function deletePost(request, postId) {
+  const token = await csrfToken(request, `/posts/${postId}`);
+  return request.post(`/posts/${postId}/delete`, {
+    form: { _csrf: token },
+    maxRedirects: 0
+  });
+}
+
 // The post id from a redirect after creating a post, for example /posts/3 gives 3.
 function postIdFrom(res) {
   const match = (res.headers()['location'] || '').match(/\/posts\/(\d+)/);
@@ -78,6 +89,7 @@ module.exports = {
   login,
   createPost,
   comment,
+  deletePost,
   postIdFrom,
   sessionId,
   firstError,
