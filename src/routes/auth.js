@@ -11,7 +11,7 @@ const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // [FIX-ENUM] fixed dummy hash compared against when a username is unknown, so login timing
-// does not reveal whether an account exists.
+// does not reveal whether an account exists. | Report Secure-5
 const DUMMY_HASH = bcrypt.hashSync('timing-safe-dummy-password', config.bcryptRounds);
 
 function validateRegistration({ username, email, password }) {
@@ -86,7 +86,7 @@ router.post('/login', async (req, res) => {
   //           access-control checks and allow-listing respectively.
   const user = User.findByUsername(username);
 
-  // [FIX-LOCKOUT] brute-force lockout — reject while locked with the generic error | #1
+  // [FIX-LOCKOUT] brute-force lockout — reject while locked with the generic error | Report Secure-5 | #1
   if (user && User.isLocked(user.id)) {
     logger.warn(`Login blocked (account locked): ${username}`, req);
     return res.status(401).render('login', {
