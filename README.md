@@ -1,34 +1,30 @@
-# Secure Blog
+# Blog Application (baseline)
 
-A minimal multi-user blog built with Node.js, Express, SQLite and EJS. It is the
-coursework vehicle for CA3 (Secure Application Programming): a small, readable
-application that a set of common web vulnerabilities and their fixes can be
-demonstrated against.
+A small multi-user blog built with Node.js, Express, SQLite and EJS. This is the clean
+baseline. It has no deliberate vulnerabilities and no added security hardening. The `insecure`
+and `secure` branches both start from here.
 
-This `main` branch is the clean, working baseline — no deliberate vulnerabilities
-and no security demonstrations. Two further branches build on it:
-
-| Branch     | Purpose                                                        |
-|------------|----------------------------------------------------------------|
-| `main`     | The base application. A functional, non-vulnerable blog.       |
-| `insecure` | Branches off `main`; introduces the vulnerabilities to study.  |
-| `secure`   | Branches off `main`; applies the fixes and hardening controls. |
+| Branch     | Purpose                                                    |
+|------------|------------------------------------------------------------|
+| `main`     | The base application. A working blog with no flaws added.  |
+| `insecure` | Starts from `main`. Adds the five deliberate flaws.        |
+| `secure`   | Starts from `main`. Fixes the flaws and adds controls.     |
 
 ## Features
 
 - Register, log in, log out
-- Create a post; list and view posts
+- Create a post, list and view posts
 - Comment on a post
 - Search posts
 - Admin role (the first registered user) with post deletion and an event-log viewer
 
 ## Requirements
 
-- **Node.js 18 or newer** (developed on Node 23)
+- Node.js 18 or newer (developed on Node 23)
 - npm (bundled with Node)
 
-`better-sqlite3` ships as a prebuilt native binary for common platforms, so no
-database server or separate SQLite install is required.
+`better-sqlite3` ships as a prebuilt native binary for common platforms, so no database server
+or separate SQLite install is required.
 
 ## Setup
 
@@ -53,14 +49,13 @@ The server then listens on the configured port (3000 by default):
 Server running at http://localhost:3000
 ```
 
-Open <http://localhost:3000> in a browser. **The first account you register
-becomes the admin**; every account after that is a regular user.
+Open <http://localhost:3000> in a browser. The first account you register becomes the admin.
+Every account after that is a regular user.
 
 ## Configuration
 
-All configuration is read from environment variables, loaded from a local `.env`
-file (which is gitignored and must never be committed). Copy `.env.example` to
-`.env` and adjust:
+All configuration is read from environment variables, loaded from a local `.env` file. The
+`.env` file is gitignored and must never be committed. Copy `.env.example` to `.env` and adjust:
 
 | Variable         | Default        | Description                                              |
 |------------------|----------------|----------------------------------------------------------|
@@ -77,10 +72,10 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
 ## npm scripts
 
-| Script            | Action                                                    |
-|-------------------|-----------------------------------------------------------|
-| `npm start`       | Start the server.                                         |
-| `npm run dev`     | Start with `node --watch` (restarts on file changes).    |
+| Script            | Action                                                     |
+|-------------------|------------------------------------------------------------|
+| `npm start`       | Start the server.                                          |
+| `npm run dev`     | Start with `node --watch` (restarts on file changes).      |
 | `npm run init-db` | Create the database file and apply the schema (idempotent). |
 
 ## Project structure
@@ -97,20 +92,20 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 │   │   ├── database.js     # Single shared SQLite connection (Singleton)
 │   │   └── schema.sql      # Table definitions
 │   ├── middleware/
-│   │   └── auth.js         # currentUser / requireAuth / requireAdmin
+│   │   └── auth.js         # currentUser, requireAuth, requireAdmin
 │   ├── models/            # Data access: user, post, comment, log
 │   └── routes/            # auth, posts, admin
 ├── views/                 # EJS templates
 └── public/                # Static CSS
 ```
 
-All database access goes through the single connection in `src/db/database.js`,
-and every query is parameterised in the model layer.
+All database access goes through the single connection in `src/db/database.js`, and every query
+is parameterised in the model layer.
 
 ## Notes
 
-- **Session store:** sessions use the express-session in-memory store, which is
-  fine for a local, non-hosted demo but is not shared across processes and is
-  cleared on restart. A persistent store would be used for a real deployment.
-- **Database files** (`*.db`, WAL/SHM sidecars) and `.env` are gitignored; the
-  database is recreated locally with `npm run init-db`.
+- Session store: sessions use the express-session in-memory store. This is fine for a local
+  demo. It is not shared across processes and it is cleared on restart. A real deployment would
+  use a persistent store.
+- Database files (`*.db` and the WAL/SHM sidecars) and `.env` are gitignored. Recreate the
+  database locally with `npm run init-db`.
