@@ -17,14 +17,14 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 // [FIX-HEADERS] OWASP Secure Headers Project + helmet | Report Secure-8
-// WHY: sets defensive response headers on every request. The Content-Security-Policy limits
-//      scripts and styles to same-origin with no inline execution, so it is the defence-in-depth
-//      backstop for XSS — an injected inline <script> or onerror handler is refused by the
-//      browser even if an output-encoding slip ever let markup through. X-Content-Type-Options
-//      stops MIME sniffing, frameAncestors 'none' blocks clickjacking, HSTS enforces HTTPS.
-// RESIDUAL: a CSP is only as strong as its weakest directive — 'unsafe-inline' or a broad host
-//      allow-list would reopen the gap, so the policy stays tight; headers complement, not replace,
-//      the primary controls (encoding, parameterisation).
+// WHY: sets defensive response headers on every request. The Content-Security-Policy allows
+//      scripts and styles from the same origin only and blocks inline execution. It is the
+//      backstop for XSS. An injected inline <script> or onerror handler is refused by the
+//      browser even if output encoding is missed. X-Content-Type-Options stops MIME sniffing.
+//      frameAncestors 'none' blocks clickjacking. HSTS tells the browser to use HTTPS.
+// RESIDUAL: a CSP is only as strong as its weakest directive. 'unsafe-inline' or a broad host
+//      list would reopen the gap, so the policy stays tight. Headers add to the primary controls
+//      (encoding, parameterisation). They do not replace them.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -45,13 +45,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // [FIX-SESSION] OWASP + Session Management Cheat Sheet | CWE-384 | Report Secure-7
-// WHY: cookies are HttpOnly (unreadable from JS, limiting XSS session theft), SameSite=Strict
-//      (not sent on cross-site requests, backing the CSRF defence) and Secure in production
-//      (HTTPS only). rolling:true renews the cookie on activity, giving an idle timeout; an
-//      absolute timeout (below) and session regeneration on login (routes/auth.js) cap a
-//      session's lifetime and defeat fixation.
-// RESIDUAL: shorter timeouts trade convenience for exposure, and a token stolen mid-session is
-//      usable until it expires — re-auth for sensitive actions would harden this further.
+// WHY: cookies are HttpOnly so JavaScript cannot read them. They are SameSite=Strict so they
+//      are not sent on cross-site requests, which backs the CSRF defence. They are Secure in
+//      production so they are only sent over HTTPS. rolling:true renews the cookie on activity,
+//      which gives an idle timeout. The absolute timeout below and the new session id on login
+//      (routes/auth.js) limit a session's lifetime and stop session fixation.
+// RESIDUAL: shorter timeouts cost convenience. A cookie stolen mid-session works until it
+//      expires. Asking for the password again on sensitive actions would add more protection.
 app.use(
   session({
     name: 'sid',
@@ -85,8 +85,8 @@ app.use((req, res, next) => {
 // [FIX-CSRF] issue the per-session token to every view, then reject any state-changing
 // request whose token is missing or wrong. See src/middleware/csrf.js.
 app.use(issueToken);
-// [FIX-LOGGING] log attack signatures before CSRF/route handling so probes are recorded
-// even when the request is subsequently rejected. See src/middleware/detect.js.
+// [FIX-LOGGING] log attack signatures before CSRF and route handling so probes are recorded
+// even when the request is rejected later. See src/middleware/detect.js.
 app.use(detectAttacks);
 app.use(verifyToken);
 
@@ -100,10 +100,10 @@ app.use((req, res) => {
 });
 
 // [FIX-SDE] OWASP A02:2021 + Error Handling Cheat Sheet | CWE-209 | Report Secure-5 | closes #5
-// WHY: unexpected errors are logged server-side but the client only ever receives a generic
-//      message, so SQL text, stack traces and file paths never reach an attacker.
-// RESIDUAL: generic messages hide detail from attackers, not the fault itself — pair with
-//      the security log so failures are still detected ([FIX-LOGGING]).
+// WHY: unexpected errors are logged on the server. The client only sees a generic message.
+//      SQL text, stack traces and file paths never reach an attacker.
+// RESIDUAL: a generic message hides detail from an attacker. It does not fix the fault.
+//      The security log records the failure so it can still be seen ([FIX-LOGGING]).
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(500).render('error', { message: 'Something went wrong. Please try again.' });

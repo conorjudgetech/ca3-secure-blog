@@ -2,12 +2,13 @@ const crypto = require('crypto');
 const logger = require('../logger');
 
 // [FIX-CSRF] OWASP + CSRF Prevention Cheat Sheet | CWE-352 | Report Secure-6
-// WHY: a per-session synchroniser token is placed in a hidden field on every state-changing
-//      form and compared (constant-time) against the session copy on submit. A cross-site
-//      request cannot read the token from the victim's session, so forged POSTs are rejected.
-// RESIDUAL: the token defends state-changing requests only; it is not a substitute for
-//      authorization checks, and SameSite=Strict cookies ([FIX-SESSION]) are the complementary
-//      layer. Safe (GET) requests must stay side-effect free for this model to hold.
+// WHY: a per-session synchroniser token is placed in a hidden field on every form that changes
+//      state. On submit it is compared against the session copy with a constant-time check. A
+//      cross-site request cannot read the token from the victim's session, so a forged POST is
+//      rejected.
+// RESIDUAL: the token only defends requests that change state. It is not a replacement for
+//      authorization checks. SameSite=Strict cookies ([FIX-SESSION]) are the second layer.
+//      GET requests must have no side effects for this to hold.
 
 function issueToken(req, res, next) {
   if (!req.session.csrfToken) {
