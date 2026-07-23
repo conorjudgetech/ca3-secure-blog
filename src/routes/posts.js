@@ -52,9 +52,10 @@ router.post('/posts/:id/comments', requireAuth, (req, res) => {
     return res.status(404).render('error', { message: 'Post not found.' });
   }
 
-  // [FIX-XSS-S] the comment is stored verbatim and safety is applied at render time by the
-  // template's output encoding (see views/post.ejs). Storing raw + encoding on output is the
-  // correct control; input filtering is the denylist that was bypassed (tests/xss-scriptstrip-bypass.js).
+  // [FIX-XSS-S] the comment is stored as given. It is made safe at render time by the output
+  // encoding in the template (see views/post.ejs). Storing the raw text and encoding on output
+  // is the correct control. Filtering the input is a denylist and it was bypassed
+  // (tests/xss-scriptstrip-bypass.js).
   const body = (req.body.body || '').trim();
   if (!body) {
     return res.redirect(`/posts/${post.id}`);
