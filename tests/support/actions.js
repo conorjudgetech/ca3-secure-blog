@@ -28,4 +28,25 @@ async function login(request, user) {
   });
 }
 
-module.exports = { csrfToken, register, login };
+// Base URL of the test server. Matches the port in playwright.config.js. Used when a test needs
+// a second, fresh request context that is not signed in.
+const BASE_URL = 'http://localhost:3400';
+
+// The value of the session cookie from a response, or null if the response did not set one.
+function sessionId(res) {
+  const setCookie = res.headers()['set-cookie'];
+  if (!setCookie) {
+    return null;
+  }
+  const match = setCookie.match(/sid=([^;]+)/);
+  return match ? match[1] : null;
+}
+
+// The first validation message shown on a register or login page.
+function firstError(html) {
+  const match = html.match(/<ul class="errors">\s*<li>([^<]*)<\/li>/);
+  return match ? match[1] : null;
+}
+
+module.exports = { csrfToken, register, login, sessionId, firstError, BASE_URL };
+
