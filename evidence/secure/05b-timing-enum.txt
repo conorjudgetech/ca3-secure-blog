@@ -8,11 +8,51 @@ the message must be the same, and the response time must be about the same.
 
 Same status code, same message.
 
-Timing, measured over 10 attempts each:
-   unknown username avg: 190 ms
-   real username avg:    191 ms
-   difference:           1 ms
+Method
+- The server was started with LOCKOUT_THRESHOLD=100000 so the real account cannot lock during
+  the loop. This is an environment override at run time, not a code change. The default in
+  src/config.js is 5.
+- Each login request was sent with a Node HTTP client and timed with a high-resolution timer
+  (process.hrtime), one request at a time.
+- For each path the first 3 requests were sent and discarded as warm-up. Then 25 requests were
+  measured.
+- The whole thing was run three separate times, as three independent rounds.
+- For each path the median, mean, minimum and maximum are reported in milliseconds.
 
-Both paths run one bcrypt compare, so both take about the same time. The 1 ms difference is
-within normal measurement noise. Without this fix the unknown-username path would skip bcrypt
-and return in under 1 ms, which would leak that the account does not exist.
+Round 1
+  unknown username: median 195.2, mean 197.7, min 190.4, max 212.4
+  real username:    median 198.6, mean 203.3, min 190.7, max 256.6
+  difference (real minus unknown): median +3.4, mean +5.6
+
+Round 2
+  unknown username: median 191.8, mean 193.4, min 188.1, max 210.4
+  real username:    median 192.6, mean 195.7, min 188.3, max 241.1
+  difference (real minus unknown): median +0.8, mean +2.3
+
+Round 3
+  unknown username: median 204.3, mean 206.3, min 197.8, max 221.6
+  real username:    median 202.8, mean 201.7, min 190.1, max 207.8
+  difference (real minus unknown): median -1.4, mean -4.6
+
+Raw measurements for round 1 (25 per path, milliseconds)
+  unknown: 209.8, 212.4, 207.0, 207.5, 196.2, 195.2, 195.2, 194.1, 194.9, 196.2, 195.2, 195.2,
+           194.9, 194.2, 202.8, 196.9, 195.3, 193.7, 194.1, 196.4, 201.3, 196.5, 195.0, 190.4,
+           191.5
+  real:    201.7, 193.2, 192.4, 190.7, 195.9, 200.4, 197.9, 194.5, 192.0, 193.0, 192.9, 192.5,
+           193.5, 198.2, 201.3, 202.2, 209.1, 198.6, 256.6, 240.5, 218.9, 216.0, 204.7, 207.0,
+           199.0
+
+Conclusion
+- Both paths run one bcrypt comparison. When the username is unknown the password is compared
+  against a fixed dummy hash, so the work is the same as a real username with a wrong password.
+  That is why both take about the same time.
+- The difference between the two paths is small and changes direction from round to round. It
+  is +3.4 ms, then +0.8 ms, then -1.4 ms by median. In round 3 the real username is the faster
+  one. A difference that flips sign like this is measurement noise, not a real signal. The
+  minimum times are the cleanest comparison because they are least affected by scheduling
+  jitter, and they are nearly identical each round (190.4 vs 190.7, then 188.1 vs 188.3).
+- The absolute times, around 190 to 205 ms here, depend on the machine and on BCRYPT_ROUNDS
+  (12 in this run). A faster machine or a lower cost factor would lower them. The gap between
+  the two paths should stay near zero on any machine.
+- Without this defence the unknown-username path would skip bcrypt and return in under a
+  millisecond, which would leak that the account does not exist.
