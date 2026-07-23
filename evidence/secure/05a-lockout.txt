@@ -17,3 +17,17 @@ Part 2: a successful login clears the counter.
    fresh account, 2 wrong password attempts -> failed_attempts=2
    correct password -> HTTP 302 (login succeeds)
    after success: failed_attempts=0 (counter reset)
+
+Part 3: the lock clears itself when the window passes.
+For this test the server was started with LOCKOUT_MINUTES=1, so the wait is about a minute
+instead of the default. This is an environment override at run time, not a code change. The
+default in src/config.js is 15 minutes. Nothing in the database was edited by hand. This shows
+the real code path expiring the lock.
+
+   5 wrong password attempts -> HTTP 401 each (account locked)
+   DB while locked: failed_attempts=5, locked_until=2026-07-23 04:31:46 (server time now was
+     2026-07-23 04:30:46, so the lock is one minute in the future)
+   correct password while locked -> HTTP 401 (still refused)
+   waited about 70 seconds for the one minute window to pass
+   correct password after the window -> HTTP 302 (login now succeeds)
+   DB after success: failed_attempts=0, locked_until=null (counter and lock cleared)
