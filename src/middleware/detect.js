@@ -6,7 +6,7 @@ const logger = require('../logger');
 //      javascript:) — and records a WARN with the user and IP. Together with the auth events
 //      (login success/failure, registration) and admin actions already logged, these lines are
 //      what turn "an attack happened" into evidence: an injection probe, a stored-script attempt,
-//      a failed-login spike.
+//      or repeated failed logins that show up when the log is reviewed.
 // RESIDUAL: signature matching catches known probes, not novel or encoded payloads, and it does
 //      not block — detection complements the primary controls (parameterisation, encoding), it
 //      does not replace them.
