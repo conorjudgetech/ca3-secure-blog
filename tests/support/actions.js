@@ -28,6 +28,30 @@ async function login(request, user) {
   });
 }
 
+// Publishes a post. The caller must already be signed in.
+async function createPost(request, post) {
+  const token = await csrfToken(request, '/posts/new');
+  return request.post('/posts', {
+    form: { title: post.title, body: post.body, _csrf: token },
+    maxRedirects: 0
+  });
+}
+
+// Adds a comment to a post. The caller must already be signed in.
+async function comment(request, postId, body) {
+  const token = await csrfToken(request, `/posts/${postId}`);
+  return request.post(`/posts/${postId}/comments`, {
+    form: { body, _csrf: token },
+    maxRedirects: 0
+  });
+}
+
+// The post id from a redirect after creating a post, for example /posts/3 gives 3.
+function postIdFrom(res) {
+  const match = (res.headers()['location'] || '').match(/\/posts\/(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
 // Base URL of the test server. Matches the port in playwright.config.js. Used when a test needs
 // a second, fresh request context that is not signed in.
 const BASE_URL = 'http://localhost:3400';
@@ -48,5 +72,15 @@ function firstError(html) {
   return match ? match[1] : null;
 }
 
-module.exports = { csrfToken, register, login, sessionId, firstError, BASE_URL };
+module.exports = {
+  csrfToken,
+  register,
+  login,
+  createPost,
+  comment,
+  postIdFrom,
+  sessionId,
+  firstError,
+  BASE_URL
+};
 
