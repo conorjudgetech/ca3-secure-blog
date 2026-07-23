@@ -1,18 +1,11 @@
 node_modules/
+npm-debug.log*
+
 .env
+
 *.db
 *.db-wal
 *.db-shm
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
-.vscode/
-.idea/
-.DS_Store
-CLAUDE.md
-.claude/
-.mcp.json
-npm-debug.log*
-
-# Private assignment brief — not part of the application
-CA3-Design-and-Build-Brief.md
