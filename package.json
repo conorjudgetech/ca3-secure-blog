@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1"
+  },
+  "overrides": {
+    "brace-expansion": "2.1.3"
   }
 }
