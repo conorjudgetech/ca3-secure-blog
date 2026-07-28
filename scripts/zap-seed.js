@@ -2,7 +2,10 @@
 // branches. The secure branch puts a CSRF token in each form, so this reads the token from the
 // form page and includes it. The insecure branch has no token, so it is left out when absent.
 //
-// Usage: SEED_PORT=3700 node zap/seed.js
+// The seed is repeatable. If the accounts or posts already exist from an earlier run it reuses
+// them instead of failing, so a second run leaves the same four posts rather than duplicates.
+//
+// Usage: SEED_PORT=3700 node scripts/zap-seed.js
 const http = require('http');
 
 const PORT = Number(process.env.SEED_PORT || 3700);
@@ -71,6 +74,35 @@ function postId(res) {
   return match ? match[1] : null;
 }
 
+// Register a new account, or log in if it already exists. A successful register on the secure
+// branch redirects (302) and logs the session in. If the username or email is already taken the
+// app answers 400, so fall back to logging in with the same details. Either way the session ends
+// up authenticated so the rest of the seed can post.
+async function registerOrLogin(session, creds, label) {
+  const reg = await submit(session, '/register', '/register', creds);
+  if (reg.status === 302) {
+    console.log(`register ${label} -> 302 (new account)`);
+    return true;
+  }
+  const login = await submit(session, '/login', '/login', {
+    username: creds.username,
+    password: creds.password
+  });
+  const ok = login.status === 302;
+  console.log(`register ${label} -> ${reg.status} (already exists), login -> ${login.status}${ok ? '' : ' (FAILED)'}`);
+  return ok;
+}
+
+// Map the post titles already shown on the home page to their ids, so a repeated run can reuse
+// them. The listing renders each post as <a href="/posts/ID">TITLE</a>.
+function existingPostsByTitle(html) {
+  const map = {};
+  const re = /<a href="\/posts\/(\d+)">([^<]+)<\/a>/g;
+  let m;
+  while ((m = re.exec(html)) !== null) map[m[2]] = m[1];
+  return map;
+}
+
 const POSTS = [
   { title: 'Welcome to the blog', body: 'The first post. It talks about gardening and growing tomatoes at home.' },
   { title: 'A simple pasta recipe', body: 'Cook the pasta, add garlic and olive oil, and a little cheese. An easy recipe.' },
@@ -80,34 +112,48 @@ const POSTS = [
 
 (async () => {
   const admin = newSession();
-  const r1 = await submit(admin, '/register', '/register', {
+  await registerOrLogin(admin, {
     username: 'adminuser',
     email: 'admin@example.com',
     password: 'CorrectHorse9'
-  });
-  console.log('register admin ->', r1.status);
+  }, 'admin');
 
+  // Create only the posts that are not already there, so a repeated run stays at four posts.
+  const present = existingPostsByTitle((await get(admin, '/')).body);
   const ids = [];
+  const created = [];
   for (const p of POSTS) {
+    if (present[p.title]) {
+      ids.push(present[p.title]);
+      continue;
+    }
     const res = await submit(admin, '/posts/new', '/posts', { title: p.title, body: p.body });
-    ids.push(postId(res));
+    const id = postId(res);
+    ids.push(id);
+    created.push(id);
   }
-  console.log('created posts ->', ids.join(', '));
-
-  await submit(admin, `/posts/${ids[0]}`, `/posts/${ids[0]}/comments`, { body: 'Great first post, thanks for sharing.' });
-  await submit(admin, `/posts/${ids[1]}`, `/posts/${ids[1]}/comments`, { body: 'I made this recipe and it worked well.' });
+  console.log('posts ->', ids.join(', '), created.length ? `(created ${created.length})` : '(all already present)');
 
   const user = newSession();
-  const r2 = await submit(user, '/register', '/register', {
+  await registerOrLogin(user, {
     username: 'bobuser',
     email: 'bob@example.com',
     password: 'CorrectHorse9'
-  });
-  console.log('register user ->', r2.status);
+  }, 'user');
 
-  await submit(user, `/posts/${ids[0]}`, `/posts/${ids[0]}/comments`, { body: 'I grow tomatoes too, they need a lot of sun.' });
-  await submit(user, `/posts/${ids[2]}`, `/posts/${ids[2]}/comments`, { body: 'The mountains look beautiful in autumn.' });
-  await submit(user, `/posts/${ids[3]}`, `/posts/${ids[3]}/comments`, { body: 'Adding this book to my reading list.' });
+  // Add the comments only when the posts were created this run, so repeated runs do not keep
+  // appending the same comments to the same posts.
+  const freshSeed = created.length === POSTS.length;
+  if (freshSeed) {
+    await submit(admin, `/posts/${ids[0]}`, `/posts/${ids[0]}/comments`, { body: 'Great first post, thanks for sharing.' });
+    await submit(admin, `/posts/${ids[1]}`, `/posts/${ids[1]}/comments`, { body: 'I made this recipe and it worked well.' });
+    await submit(user, `/posts/${ids[0]}`, `/posts/${ids[0]}/comments`, { body: 'I grow tomatoes too, they need a lot of sun.' });
+    await submit(user, `/posts/${ids[2]}`, `/posts/${ids[2]}/comments`, { body: 'The mountains look beautiful in autumn.' });
+    await submit(user, `/posts/${ids[3]}`, `/posts/${ids[3]}/comments`, { body: 'Adding this book to my reading list.' });
+    console.log('comments added');
+  } else {
+    console.log('comments skipped (posts already existed)');
+  }
 
   await get(admin, '/search?q=tomatoes');
   await get(admin, '/search?q=recipe');
