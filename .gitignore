@@ -11,3 +11,4 @@ npm-debug.log*
 *.sqlite-shm
 
 zap/
+test-results/
