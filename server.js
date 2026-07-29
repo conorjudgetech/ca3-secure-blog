@@ -21,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
     name: 'sid',
-    // [VULN-SDE] OWASP A02:2021 | CWE-798 | Report Insecure-5 | Issue #5
+    // [VULN-SDE] Report Insecure-5 | OWASP A02:2021 | CWE-798 | Issue #5
     // WHY: the session signing key is a hard-coded secret committed to the repo. Anyone with
     //      repo access can use it to forge session cookies.
     secret: secrets.sessionSecret,
@@ -33,7 +33,7 @@ app.use(
 
 app.use(currentUser);
 
-// [VULN-SDE] OWASP A02:2021 | CWE-215 | Report Insecure-5 | Issue #5
+// [VULN-SDE] Report Insecure-5 | OWASP A02:2021 | CWE-215 | Issue #5
 // WHY: any request with ?debug=true returns internal data to any caller. It includes the
 //      hard-coded secrets, the session, and the users table with plaintext passwords.
 app.use((req, res, next) => {
@@ -57,7 +57,7 @@ app.use((req, res) => {
   res.status(404).render('error', { message: 'Page not found.' });
 });
 
-// [VULN-SDE] OWASP A02:2021 | CWE-209 | Report Insecure-5 | Issue #5
+// [VULN-SDE] Report Insecure-5 | OWASP A02:2021 | CWE-209 | Issue #5
 // WHY: the raw error message and stack trace are sent to the client. This leaks the SQL, the
 //      file paths and library internals that help an attacker map the system.
 app.use((err, req, res, next) => {

@@ -25,7 +25,7 @@ const Post = {
   },
 
   search(term) {
-    // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report Insecure-1 | Issue #1
+    // [VULN-SQLI] Report Insecure-1 | OWASP A03:2021 Injection | CWE-89 | Issue #1
     // WHY: the search term is put into the query as text. A quote in the term ends the string
     //      and lets an attacker add UNION or OR clauses.
     const sql =

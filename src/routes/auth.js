@@ -40,7 +40,7 @@ router.post('/register', (req, res) => {
 
   // The very first account becomes the admin; everyone after is a regular user.
   const role = User.count() === 0 ? 'admin' : 'user';
-  // [VULN-SDE] OWASP A02:2021 Cryptographic Failures | CWE-256 | Report Insecure-5 | Issue #5
+  // [VULN-SDE] Report Insecure-5 | OWASP A02:2021 Cryptographic Failures | CWE-256 | Issue #5
   // WHY: the password is stored as plaintext. Anyone who reads the users table, through the SQL
   //      injection above or the debug dump, gets every password.
   const user = User.create({ username, email, password, role });
@@ -57,10 +57,9 @@ router.get('/login', (req, res) => {
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // [VULN-SQLI] OWASP A03:2021 Injection | CWE-89 | Report Insecure-1 | Issue #1
-  // WHY: the username and password are put straight into the SQL string. A value like
-  //      admin' OR '1'='1 turns the WHERE clause into a condition that is always true. Login
-  //      then succeeds whenever the query returns any row.
+  // [VULN-SQLI] Report Insecure-1 | OWASP A03:2021 Injection | CWE-89 | Issue #1
+  // WHY: the username and password go straight into the SQL string. A value like
+  //      admin' OR '1'='1 makes the WHERE clause always true, so login always succeeds.
   const sql =
     "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
 
