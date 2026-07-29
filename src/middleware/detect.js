@@ -1,15 +1,10 @@
 const logger = require('../logger');
 
-// [FIX-LOGGING] OWASP A09:2021 Security Logging and Monitoring Failures | Report Secure-9
-// WHY: scans query and body values for signatures of the attacks this app studies:
-//      SQL injection (' OR, --, UNION SELECT, ; DROP) and XSS (<script, onerror=, onload=,
-//      javascript:). On a match it writes a WARN with the user and IP. With the auth events
-//      (login success and failure, registration) and admin actions already logged, these lines
-//      turn "an attack happened" into evidence: an injection probe, a stored-script attempt,
-//      or repeated failed logins that show up when the log is reviewed.
-// RESIDUAL: signature matching catches known probes, not new or encoded payloads. It does not
-//      block. Detection adds to the primary controls (parameterisation, encoding). It does not
-//      replace them.
+// [FIX-LOGGING] Report Secure-9 | OWASP A09:2021 Security Logging and Monitoring Failures
+// WHY: scans query and body values for SQL injection and XSS signatures. On a match it logs a
+//      WARN with the user and IP, so an injection or stored-script probe becomes reviewable evidence.
+// RESIDUAL: signature matching catches known probes, not new or encoded payloads, and it does not
+//      block. Detection adds to parameterisation and encoding, it does not replace them.
 const SIGNATURES = [
   { name: 'SQL injection', re: /('\s*or\s|--|\bunion\b\s+\bselect\b|;\s*drop\b)/i },
   { name: 'XSS', re: /(<script\b|onerror\s*=|onload\s*=|javascript:)/i }

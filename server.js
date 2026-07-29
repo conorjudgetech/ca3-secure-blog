@@ -16,15 +16,10 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// [FIX-HEADERS] OWASP Secure Headers Project + helmet | Report Secure-8
-// WHY: sets defensive response headers on every request. The Content-Security-Policy allows
-//      scripts and styles from the same origin only and blocks inline execution. It is the
-//      backstop for XSS. An injected inline <script> or onerror handler is refused by the
-//      browser even if output encoding is missed. X-Content-Type-Options stops MIME sniffing.
-//      frameAncestors 'none' blocks clickjacking. HSTS tells the browser to use HTTPS.
-// RESIDUAL: a CSP is only as strong as its weakest directive. 'unsafe-inline' or a broad host
-//      list would reopen the gap, so the policy stays tight. Headers add to the primary controls
-//      (encoding, parameterisation). They do not replace them.
+// [FIX-HEADERS] Report Secure-8 | OWASP Secure Headers Project + helmet
+// WHY: script-src and style-src have no 'unsafe-inline', so an injected inline script is refused.
+// RESIDUAL: a CSP is only as strong as its weakest directive, so the policy stays tight. Headers
+//      back up encoding and parameterisation, they do not replace them.
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -44,12 +39,8 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// [FIX-SESSION] OWASP + Session Management Cheat Sheet | CWE-384 | Report Secure-7
-// WHY: cookies are HttpOnly so JavaScript cannot read them. They are SameSite=Strict so they
-//      are not sent on cross-site requests, which backs the CSRF defence. They are Secure in
-//      production so they are only sent over HTTPS. rolling:true renews the cookie on activity,
-//      which gives an idle timeout. The absolute timeout below and the new session id on login
-//      (routes/auth.js) limit a session's lifetime and stop session fixation.
+// [FIX-SESSION] Report Secure-7 | OWASP + Session Management Cheat Sheet | CWE-384
+// WHY: regenerating the session id on login (routes/auth.js) is what stops fixation.
 // RESIDUAL: shorter timeouts cost convenience. A cookie stolen mid-session works until it
 //      expires. Asking for the password again on sensitive actions would add more protection.
 app.use(
@@ -99,7 +90,7 @@ app.use((req, res) => {
   res.status(404).render('error', { message: 'Page not found.' });
 });
 
-// [FIX-SDE] OWASP A02:2021 + Error Handling Cheat Sheet | CWE-209 | Report Secure-5 | closes #5
+// [FIX-SDE] Report Secure-5 | OWASP A02:2021 + Error Handling Cheat Sheet | CWE-209 | closes #5
 // WHY: unexpected errors are logged on the server. The client only sees a generic message.
 //      SQL text, stack traces and file paths never reach an attacker.
 // RESIDUAL: a generic message hides detail from an attacker. It does not fix the fault.

@@ -11,7 +11,7 @@
 <div id="results"></div>
 
 <% if (q) { %>
-  <%# [FIX-XSS-R] OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | Report Secure-2 | closes #2 %>
+  <%# [FIX-XSS-R] Report Secure-2 | OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | closes #2 %>
   <%# WHY: q is printed with the escaped output tag, which HTML-encodes it. A script payload in %>
   <%#      the search term is shown as plain text and is not parsed as markup. %>
   <%# RESIDUAL: this encoding is right for the HTML body. A value put into an attribute, a URL %>

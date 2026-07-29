@@ -25,7 +25,7 @@ const Post = {
   },
 
   search(term) {
-    // [FIX-SQLI] OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | Report Secure-1 | closes #1
+    // [FIX-SQLI] Report Secure-1 | OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | closes #1
     // WHY: the term is bound as a parameter. Quotes or SQL keywords in it are treated as literal
     //      characters of the LIKE pattern, never as query syntax.
     // RESIDUAL: the % and _ characters in the term still act as LIKE wildcards. That is search

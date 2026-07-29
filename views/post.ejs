@@ -18,7 +18,7 @@
     <% comments.forEach(function (comment) { %>
       <div class="comment">
         <p class="meta"><%= comment.author %> on <%= comment.created_at %></p>
-        <%# [FIX-XSS-S] OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | Report Secure-3 | closes #3 %>
+        <%# [FIX-XSS-S] Report Secure-3 | OWASP A03 + XSS Prevention Cheat Sheet | CWE-79 | closes #3 %>
         <%# WHY: the stored comment is printed with the escaped output tag. Any markup, such as %>
         <%#      script tags, event handlers or svg, is shown as plain text to every viewer. %>
         <%# RESIDUAL: this encoding is right for the HTML body. If a comment were put into an %>

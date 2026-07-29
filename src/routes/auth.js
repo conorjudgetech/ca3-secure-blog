@@ -10,9 +10,9 @@ const router = express.Router();
 const USERNAME_RE = /^[a-zA-Z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// [FIX-ENUM] login timing does not reveal whether an account exists | Report Secure-5
-// When the username is unknown, the password is compared against a fixed dummy hash. The
-// request then takes the same time as a real username with a wrong password.
+// [FIX-ENUM] Report Secure-5
+// WHY: an unknown username is checked against a fixed dummy hash, so login timing does not
+//      reveal whether the account exists.
 const DUMMY_HASH = bcrypt.hashSync('timing-safe-dummy-password', config.bcryptRounds);
 
 function validateRegistration({ username, email, password }) {
@@ -29,9 +29,8 @@ function validateRegistration({ username, email, password }) {
   return errors;
 }
 
-// [FIX-SESSION] regenerate the session on login so a session id set before login cannot be
-// reused. This stops session fixation. Also record the creation time used by the
-// absolute-timeout check.
+// [FIX-SESSION] regenerate the session on login so an id set before login cannot be reused, which
+// stops fixation. Also records the creation time used by the absolute-timeout check.
 function establishSession(req, user, onDone) {
   req.session.regenerate((err) => {
     if (err) logger.error(`Session regeneration failed: ${err.message}`, req);
@@ -56,13 +55,11 @@ router.post('/register', async (req, res) => {
     return res.status(400).render('register', { errors, values: { username, email } });
   }
 
-  // [FIX-SDE] OWASP A02:2021 + Password Storage Cheat Sheet | CWE-256 | Report Secure-5 | closes #5
-  // WHY: the password is stored only as a bcrypt hash. bcrypt adds a per-user salt and uses a
-  //      work factor set by BCRYPT_ROUNDS. bcrypt.compare runs in constant time. A database leak
-  //      does not expose the password and the check cannot be timed.
-  // RESIDUAL: hashing protects the stored password. It does not protect a hijacked live session
-  //      or a weak password the user chose. Pair it with session controls and a breached-password
-  //      check.
+  // [FIX-SDE] Report Secure-5 | OWASP A02:2021 + Password Storage Cheat Sheet | CWE-256 | closes #5
+  // WHY: the password is stored only as a bcrypt hash, with a per-user salt and a work factor, and
+  //      bcrypt.compare runs in constant time. A leak exposes no password and the check is not timable.
+  // RESIDUAL: hashing protects the stored password, not a hijacked live session or a weak chosen
+  //      password. Pair it with session controls and a breached-password check.
   const hash = await bcrypt.hash(password, config.bcryptRounds);
   // The very first account becomes the admin; everyone after is a regular user.
   const role = User.count() === 0 ? 'admin' : 'user';
@@ -79,16 +76,14 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
-  // [FIX-SQLI] OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | Report Secure-1 | closes #1
-  // WHY: the query uses a bound parameter, so the username is always data. It can never change
-  //      the structure of the statement. Unlike a blacklist, this works in any context and
-  //      cannot be bypassed by a crafted payload.
-  // RESIDUAL: parameterisation stops injection. It does not stop authorization flaws (IDOR) or
-  //           parts of a query that cannot be bound (table or column names, ORDER BY). Those need
-  //           access-control checks and allow-listing.
+  // [FIX-SQLI] Report Secure-1 | OWASP A03:2021 + SQL Injection Prevention Cheat Sheet | CWE-89 | closes #1
+  // WHY: the query binds the username as a parameter, so it is always data and can never change
+  //      the statement's structure. Unlike a blacklist, this holds in any context.
+  // RESIDUAL: parameterisation stops injection, not authorization flaws (IDOR) or parts that cannot
+  //           be bound (table or column names, ORDER BY). Those need access checks and allow-listing.
   const user = User.findByUsername(username);
 
-  // [FIX-LOCKOUT] brute-force lockout, reject while locked with the generic error | Report Secure-5 | #1
+  // [FIX-LOCKOUT] Report Secure-5 | #1
   if (user && User.isLocked(user.id)) {
     logger.warn(`Login blocked (account locked): ${username}`, req);
     return res.status(401).render('login', {

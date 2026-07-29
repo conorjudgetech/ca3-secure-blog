@@ -2,10 +2,9 @@ require('dotenv').config();
 
 const path = require('path');
 
-// [FIX-SDE] OWASP A02:2021 | CWE-798 | Report Secure-5 | closes #5
-// WHY: all secrets (the session signing key, the DB path, the work factor) are read from the
-//      environment through a gitignored .env file. They are never hard-coded or committed.
-//      .env.example lists the keys without values.
+// [FIX-SDE] Report Secure-5 | OWASP A02:2021 | CWE-798 | closes #5
+// WHY: all secrets (session key, DB path, work factor) are read from the environment via a
+//      gitignored .env file, never hard-coded or committed. .env.example lists the keys.
 // RESIDUAL: the dev fallback secret below is only for a fresh local checkout. A real deployment
 //      must set SESSION_SECRET (the README says so) or sessions can be forged.
 const config = {
