@@ -58,8 +58,8 @@ router.post('/login', (req, res) => {
   const { username, password } = req.body;
 
   // [VULN-SQLI] Report Insecure-1 | OWASP A03:2021 Injection | CWE-89 | Issue #1
-  // WHY: the username and password go straight into the SQL string. A value like
-  //      admin' OR '1'='1 makes the WHERE clause always true, so login always succeeds.
+  // WHY: input goes straight into the SQL string. The value admin' OR '1'='1'--
+  //      comments out the password check, so login succeeds with any password.
   const sql =
     "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'";
 
